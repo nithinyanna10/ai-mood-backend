@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+python-multipart
+deepface
+spotipy
+nltk
+pydantic
+Pillow
+aiofiles
+requests
+transformers
+torch
