@@ -12,3 +12,4 @@ transformers
 torch
 tensorflow==2.19.0
 tf-keras        # ✅ add this line
+python-dotenv
