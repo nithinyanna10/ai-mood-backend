@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional, List, Dict
+from typing import Optional, List
 
 from emotion_detector import detect_emotion
 from mood_enhancer import analyze_text_mood
@@ -9,10 +9,10 @@ from spotify_api import get_tracks_for_mood
 
 app = FastAPI()
 
-# Enable CORS for frontend (adjust origin for production!)
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Use specific domain in prod
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,28 +28,31 @@ class Track(BaseModel):
 class MoodResponse(BaseModel):
     mood: str
     emotion: str
-    tracks: List[Track]  # ✅ Fixed field name and type
+    tracks: List[Track]
 
 @app.post("/predict", response_model=MoodResponse)
 async def predict_mood(
     file: UploadFile = File(...),
     text: Optional[str] = Form(None)
 ):
-    print("🔁 Received /predict request")
+    print("🔁 /predict called")
 
     emotion = detect_emotion(file)
     text_mood = analyze_text_mood(text) if text else None
-
-    # Choose best mood
     mood = text_mood or emotion
 
     tracks = get_tracks_for_mood(mood)
 
-    print("✅ Returning mood:", mood)
-    print("🎵 Tracks:", len(tracks))
+    print("✅ Mood:", mood)
+    print("🎧 Tracks found:", len(tracks))
 
     return {
         "mood": mood,
         "emotion": emotion,
-        "tracks": tracks  # ✅ renamed from 'playlists'
+        "tracks": tracks
     }
+
+# Optional local run
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
